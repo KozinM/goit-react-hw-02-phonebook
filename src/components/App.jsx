@@ -1,30 +1,69 @@
-import Profile from './Profile/Profile';
-import user from '../json/user.json'
-import Statistics from './Statistics/Statistics';
-import statisticData from '../json/data.json';
-import FriendList from './FriendList/FriendList';
-import friends from '../json/friends.json';
-import TransactionHistory from './TransactionsHistory/TransactionHistory';
-import transactions from '../json/transactions.json';
+import React, { Component } from 'react';
+import { ContactForm } from './ContactForm/contactForm';
+import ContactList from './ContactList/contactList';
+import Filter from './ContactFilter/contactFilter';
+import styles from './style.module.css';
 
-function App() {
-  return (
-    <div className="App">
-      <Profile
-        name={user.name}
-        tag={user.tag}
-        location={user.location}
-        avatar={user.avatar}
-        stats={user.stats}
-      />
+export class App extends Component {
+  state = {
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
+    filter: '',
+  };
 
-      <Statistics title="Upload stats" stats={statisticData} />
-      
-      <FriendList friends={friends} />
+  handleChange = event => {
+    const { name, value } = event.currentTarget;
+    this.setState({ [name]: value });
+  };
 
-      <TransactionHistory items={transactions} />
-    </div>
-  );
+  addContacts = data => {
+    const { contacts } = this.state;
+    const { name } = data;
+    const isContactExist = contacts.find(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+    if (isContactExist) {
+      return alert(`${name} is already in contacts`);
+    }
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, data],
+    }));
+  };
+
+  handleFilter = () => {
+    const { contacts, filter } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  handleDelete = event => {
+    const { contacts } = this.state;
+    const elementToRemove = event.currentTarget.parentNode.id;
+    this.setState({
+      contacts: contacts.filter(contact => contact.id !== elementToRemove),
+    });
+  };
+
+  render() {
+    const { filter } = this.state;
+
+    return (
+      <div className={styles.wrapper}>
+        <h1>Phonebook</h1>
+        <ContactForm addContacts={this.addContacts} />
+        <h2>Contacts</h2>
+        <Filter filter={filter} onChange={this.handleChange} />
+        <ContactList
+          getVisibleContacts={this.handleFilter()}
+          deleteContact={this.handleDelete}
+        />
+      </div>
+    );
+  }
 }
-
-export default App;
